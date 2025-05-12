@@ -50,15 +50,15 @@ public class InputManager : MonoBehaviour
         Vector2 lookInput = onFoot.Look.ReadValue<Vector2>();
 
 #if UNITY_ANDROID || UNITY_IOS
-    if (Input.touchCount > 0)
-    {
-        Touch touch = Input.GetTouch(0);
-
-        if (touch.phase == TouchPhase.Moved && !IsPointerOverUIObject(touch))
+        if (Input.touchCount > 0)
         {
-            lookInput += touch.deltaPosition * 0.1f; // Tune sensitivity
+            Touch touch = Input.GetTouch(0);
+
+            if (touch.phase == UnityEngine.TouchPhase.Moved && !IsPointerOverUIObject(touch))
+            {
+                lookInput += touch.deltaPosition * 0.1f;
+            }
         }
-    }
 #endif
 
         look.ProcessLook(lookInput);
