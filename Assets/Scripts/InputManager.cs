@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
-using System.Collections.Generic;
 using UnityEngine.UI;
-
+using System.Collections.Generic;
 
 public class InputManager : MonoBehaviour
 {
@@ -13,57 +12,60 @@ public class InputManager : MonoBehaviour
     private PlayerMotor motor;
     private PlayerLook look;
 
-    // FOR MOBILE
+    // Mobile Controls
     public Joystick moveJoystick;
     public Button jumpButton;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
         playerInput = new PlayerInput();
         onFoot = playerInput.OnFoot;
         motor = GetComponent<PlayerMotor>();
         look = GetComponent<PlayerLook>();
+
+#if !UNITY_ANDROID && !UNITY_IOS
         onFoot.Jump.performed += ctx => motor.Jump();
+#endif
+
         if (jumpButton != null)
         {
             jumpButton.onClick.AddListener(() => motor.Jump());
         }
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         Vector2 moveInput = onFoot.Movement.ReadValue<Vector2>();
 
-        // Add joystick input (if assigned)
+#if UNITY_ANDROID || UNITY_IOS
         if (moveJoystick != null)
         {
-            moveInput += new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical);
+            moveInput = new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical);
         }
+#endif
 
         motor.ProcessMove(moveInput);
     }
 
     void LateUpdate()
     {
-        Vector2 lookInput = onFoot.Look.ReadValue<Vector2>();
+        Vector2 lookInput = Vector2.zero;
 
 #if UNITY_ANDROID || UNITY_IOS
-        if (Input.touchCount > 0)
+        foreach (Touch touch in Input.touches)
         {
-            Touch touch = Input.GetTouch(0);
-
             if (touch.phase == UnityEngine.TouchPhase.Moved && !IsPointerOverUIObject(touch))
             {
-                lookInput += touch.deltaPosition * 0.1f;
+                lookInput = touch.deltaPosition * 0.1f;
+                break; // Use the first valid non-UI touch
             }
         }
+#else
+        lookInput = onFoot.Look.ReadValue<Vector2>();
 #endif
 
         look.ProcessLook(lookInput);
     }
-
 
     private void OnEnable()
     {
@@ -77,8 +79,10 @@ public class InputManager : MonoBehaviour
 
     private bool IsPointerOverUIObject(Touch touch)
     {
-        PointerEventData eventData = new PointerEventData(EventSystem.current);
-        eventData.position = touch.position;
+        PointerEventData eventData = new PointerEventData(EventSystem.current)
+        {
+            position = touch.position
+        };
         List<RaycastResult> results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(eventData, results);
         return results.Count > 0;
