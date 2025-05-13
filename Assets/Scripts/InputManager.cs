@@ -12,7 +12,7 @@ public class InputManager : MonoBehaviour
     private PlayerMotor motor;
     private PlayerLook look;
 
-    // Mobile Controls
+    // Mobile UI references
     public Joystick moveJoystick;
     public Button jumpButton;
 
@@ -23,10 +23,10 @@ public class InputManager : MonoBehaviour
         motor = GetComponent<PlayerMotor>();
         look = GetComponent<PlayerLook>();
 
-#if !UNITY_ANDROID && !UNITY_IOS
+        // Keyboard jump support
         onFoot.Jump.performed += ctx => motor.Jump();
-#endif
 
+        // Mobile button jump support
         if (jumpButton != null)
         {
             jumpButton.onClick.AddListener(() => motor.Jump());
@@ -38,7 +38,8 @@ public class InputManager : MonoBehaviour
         Vector2 moveInput = onFoot.Movement.ReadValue<Vector2>();
 
 #if UNITY_ANDROID || UNITY_IOS
-        if (moveJoystick != null)
+        // Use joystick on mobile if in use
+        if (moveJoystick != null && (Mathf.Abs(moveJoystick.Horizontal) > 0.1f || Mathf.Abs(moveJoystick.Vertical) > 0.1f))
         {
             moveInput = new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical);
         }
@@ -49,19 +50,18 @@ public class InputManager : MonoBehaviour
 
     void LateUpdate()
     {
-        Vector2 lookInput = Vector2.zero;
+        Vector2 lookInput = onFoot.Look.ReadValue<Vector2>();
 
 #if UNITY_ANDROID || UNITY_IOS
         foreach (Touch touch in Input.touches)
         {
+            // Prevent conflict if dragging over UI (joystick, buttons)
             if (touch.phase == UnityEngine.TouchPhase.Moved && !IsPointerOverUIObject(touch))
             {
                 lookInput = touch.deltaPosition * 0.1f;
-                break; // Use the first valid non-UI touch
+                break; // Use the first valid finger for camera look
             }
         }
-#else
-        lookInput = onFoot.Look.ReadValue<Vector2>();
 #endif
 
         look.ProcessLook(lookInput);
@@ -77,6 +77,9 @@ public class InputManager : MonoBehaviour
         onFoot.Disable();
     }
 
+    /// <summary>
+    /// Prevents input conflicts with on-screen UI buttons (jump/joystick).
+    /// </summary>
     private bool IsPointerOverUIObject(Touch touch)
     {
         PointerEventData eventData = new PointerEventData(EventSystem.current)
