@@ -64,6 +64,11 @@ providers = {
 		priority = 210
 		defaultAction = null
 	}
+	figma = {
+		active = true
+		priority = 100
+		defaultAction = null
+	}
 }
 objectSelectors = {
 }
