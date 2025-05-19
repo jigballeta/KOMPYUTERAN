@@ -1,47 +1,48 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Video;
 
 public class MonitorController : MonoBehaviour
 {
-    private VideoPlayer videoPlayer;
-    private Renderer screenRenderer;
-
-    [SerializeField] private float shutdownDelay = 2f;
+    [SerializeField] private VideoPlayer videoPlayer;
 
     void Start()
     {
-        videoPlayer = GetComponent<VideoPlayer>();
-        screenRenderer = GetComponent<Renderer>();
+        if (videoPlayer == null)
+            videoPlayer = GetComponent<VideoPlayer>();
 
-        if (videoPlayer == null || screenRenderer == null)
-        {
-            Debug.LogError("Missing VideoPlayer or Renderer on " + gameObject.name);
-        }
+        if (videoPlayer.targetTexture != null)
+            videoPlayer.targetTexture.Release(); // show black at start
 
+        videoPlayer.prepareCompleted += OnVideoPrepared;
         videoPlayer.loopPointReached += OnVideoFinished;
     }
 
-    public void ActivateMonitor()
+    public void PowerOn()
     {
-        videoPlayer.Play();
+        Debug.Log("🎥 PowerOn() called on: " + gameObject.name);
+
+        if (!videoPlayer.isPrepared)
+        {
+            Debug.Log("Preparing video...");
+            videoPlayer.Prepare();
+        }
+        else
+        {
+            Debug.Log("Already prepared — playing...");
+            videoPlayer.Play();
+        }
+    }
+
+    private void OnVideoPrepared(VideoPlayer vp)
+    {
+        Debug.Log("✅ Video prepared, now playing...");
+        vp.Play();
     }
 
     private void OnVideoFinished(VideoPlayer vp)
     {
-        // Optional: delay shutdown
-        Invoke(nameof(ShutdownMonitor), shutdownDelay);
-    }
-
-    private void ShutdownMonitor()
-    {
-        screenRenderer.material.mainTexture = null;
-    }
-
-    // Optional if you want to reset manually
-    public void DeactivateMonitor()
-    {
-        videoPlayer.Stop();
-        screenRenderer.material.mainTexture = null;
+        Debug.Log("🛑 Video finished on " + gameObject.name);
+        if (vp.targetTexture != null)
+            vp.targetTexture.Release();
     }
 }
-

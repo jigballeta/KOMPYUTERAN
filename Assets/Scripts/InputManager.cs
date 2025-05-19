@@ -11,8 +11,8 @@ public class InputManager : MonoBehaviour
 
     private PlayerMotor motor;
     private PlayerLook look;
+    public InputAction interact;
 
-    // Mobile UI references
     public Joystick moveJoystick;
     public Button jumpButton;
 
@@ -20,13 +20,15 @@ public class InputManager : MonoBehaviour
     {
         playerInput = new PlayerInput();
         onFoot = playerInput.OnFoot;
+        interact = onFoot.Interact;
+
         motor = GetComponent<PlayerMotor>();
         look = GetComponent<PlayerLook>();
 
-        // Keyboard jump support
+        // Keyboard jump
         onFoot.Jump.performed += ctx => motor.Jump();
 
-        // Mobile button jump support
+        // Mobile jump button
         if (jumpButton != null)
         {
             jumpButton.onClick.AddListener(() => motor.Jump());
@@ -38,7 +40,6 @@ public class InputManager : MonoBehaviour
         Vector2 moveInput = onFoot.Movement.ReadValue<Vector2>();
 
 #if UNITY_ANDROID || UNITY_IOS
-        // Use joystick on mobile if in use
         if (moveJoystick != null && (Mathf.Abs(moveJoystick.Horizontal) > 0.1f || Mathf.Abs(moveJoystick.Vertical) > 0.1f))
         {
             moveInput = new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical);
@@ -55,11 +56,16 @@ public class InputManager : MonoBehaviour
 #if UNITY_ANDROID || UNITY_IOS
         foreach (Touch touch in Input.touches)
         {
-            // Prevent conflict if dragging over UI (joystick, buttons)
-            if (touch.phase == UnityEngine.TouchPhase.Moved && !IsPointerOverUIObject(touch))
+            if (touch.phase == UnityEngine.TouchPhase.Moved)
+
             {
+                if (IsPointerOverUIObject(touch.position)) continue;
+
+                // Ignore left-side (joystick area)
+                if (touch.position.x < Screen.width * 0.4f) continue;
+
                 lookInput = touch.deltaPosition * 0.1f;
-                break; // Use the first valid finger for camera look
+                break;
             }
         }
 #endif
@@ -69,25 +75,28 @@ public class InputManager : MonoBehaviour
 
     private void OnEnable()
     {
+        playerInput.Enable();
         onFoot.Enable();
     }
 
     private void OnDisable()
     {
+        playerInput.Disable();
         onFoot.Disable();
     }
 
-    /// <summary>
-    /// Prevents input conflicts with on-screen UI buttons (jump/joystick).
-    /// </summary>
-    private bool IsPointerOverUIObject(Touch touch)
+    private bool IsPointerOverUIObject(Vector2 screenPos)
     {
         PointerEventData eventData = new PointerEventData(EventSystem.current)
         {
-            position = touch.position
+            position = screenPos
         };
+
         List<RaycastResult> results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(eventData, results);
+
         return results.Count > 0;
     }
 }
+
+

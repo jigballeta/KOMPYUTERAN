@@ -1,15 +1,20 @@
-using System.Threading;
+using UnityEngine;
 
-protected override void Interact()
+public class MainPowerSwitch : Interactable
 {
-    powerOn = !powerOn;
-    foreach (MonitorController monitor in monitors)
+    [SerializeField] private MonitorController[] monitors;
+
+    protected override void Interact()
     {
-        if (powerOn)
-            monitor.ActivateMonitor();
-        else
-            monitor.DeactivateMonitor();
+        Debug.Log("Switch Interacted");
+        foreach (MonitorController monitor in monitors)
+        {
+            monitor.PowerOn();
+        }
+    }
+
+    private void Start()
+    {
+        promptMessage = "Flip Main Power Switch";
     }
 }
-
-
