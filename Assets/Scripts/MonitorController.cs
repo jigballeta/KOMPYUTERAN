@@ -3,7 +3,7 @@ using UnityEngine.Video;
 
 public class MonitorController : MonoBehaviour
 {
-    [SerializeField] private VideoPlayer videoPlayer;
+    [SerializeField] private VideoPlayer videoPlayer; // ✅ Only declare once
 
     void Start()
     {
@@ -33,6 +33,20 @@ public class MonitorController : MonoBehaviour
         }
     }
 
+    public void PowerOff()
+    {
+        Debug.Log("🔌 PowerOff() called on: " + gameObject.name);
+
+        if (videoPlayer != null)
+        {
+            if (videoPlayer.isPlaying)
+                videoPlayer.Stop();
+
+            if (videoPlayer.targetTexture != null)
+                videoPlayer.targetTexture.Release(); // Clear screen
+        }
+    }
+
     private void OnVideoPrepared(VideoPlayer vp)
     {
         Debug.Log("✅ Video prepared, now playing...");
@@ -46,3 +60,4 @@ public class MonitorController : MonoBehaviour
             vp.targetTexture.Release();
     }
 }
+
