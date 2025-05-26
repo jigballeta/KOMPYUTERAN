@@ -3,12 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Sun
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Indoor Light
   - Water
   - UI
   - Interactable
