@@ -16,6 +16,7 @@ public class Door : Interactable
     private void Start()
     {
         SetDoorState(false);
+        UpdatePromptMessage();
     }
 
     protected override void Interact()
@@ -23,6 +24,7 @@ public class Door : Interactable
         isOpen = !isOpen;
         SetDoorState(isOpen);
         PlaySound(isOpen);
+        UpdatePromptMessage();
     }
 
     private void SetDoorState(bool open)
@@ -42,6 +44,11 @@ public class Door : Interactable
         {
             audioSource.PlayOneShot(clip);
         }
+    }
+
+    private void UpdatePromptMessage()
+    {
+        promptMessage = isOpen ? "Close Door" : "Open Door";
     }
 }
 
