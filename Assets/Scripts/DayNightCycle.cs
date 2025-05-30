@@ -20,14 +20,18 @@ public class DayNightCycle : MonoBehaviour
 
     [SerializeField] private MonitorController[] monitors;
 
-
     public Action OnDayEnd;
+
+    private float startHour = 8f; // 8:00 AM
+    private float endHour = 20f;  // 8:00 PM
 
     public void StartDay()
     {
         timePassed = 0f;
         isDayRunning = true;
         SetIndoorLights(false);
+
+        UpdateLighting(0f); // Set to initial morning lighting
     }
 
     void Update()
@@ -37,10 +41,8 @@ public class DayNightCycle : MonoBehaviour
         timePassed += Time.deltaTime;
         float timePercent = timePassed / (dayDurationMinutes * 60f);
 
-        // Rotate light like sun
-        directionalLight.transform.rotation = Quaternion.Euler(new Vector3((timePercent * 360f) - 90f, 170f, 0f));
-        directionalLight.color = lightColor.Evaluate(timePercent);
-        directionalLight.intensity = lightIntensity.Evaluate(timePercent);
+        float adjustedPercent = Mathf.Clamp01(timePercent * 0.75f + 0.25f); // Shift day to start from 8AM
+        UpdateLighting(adjustedPercent);
 
         if (directionalLight.intensity < 0.3f)
         {
@@ -57,6 +59,14 @@ public class DayNightCycle : MonoBehaviour
         UpdateClockUI(timePercent);
     }
 
+    void UpdateLighting(float percent)
+    {
+        float sunRotation = Mathf.Lerp(0f, 180f, percent); // 0 = morning, 180 = evening
+        directionalLight.transform.rotation = Quaternion.Euler(new Vector3(sunRotation - 90f, 170f, 0f));
+        directionalLight.color = lightColor.Evaluate(percent);
+        directionalLight.intensity = lightIntensity.Evaluate(percent);
+    }
+
     void SetIndoorLights(bool isOn)
     {
         foreach (Light light in indoorLights)
@@ -67,16 +77,13 @@ public class DayNightCycle : MonoBehaviour
 
     void UpdateClockUI(float percent)
     {
-        int startHour = 8;
-        int endHour = 20;
         float currentHour = Mathf.Lerp(startHour, endHour, percent);
-
         TimeSpan time = TimeSpan.FromHours(currentHour);
         timeDisplay.text = time.ToString(@"hh\:mm");
 
         float remainingTime = (1f - percent) * dayDurationMinutes;
         countdownDisplay.text = $"{remainingTime:F1} mins left";
     }
-
-
 }
+
+
