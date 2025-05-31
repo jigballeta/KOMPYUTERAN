@@ -3281,7 +3281,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3a0038fab33f554fb03393d52e88a92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customerPrefab: {fileID: 204609119980149518, guid: 6d584070a311a8e46b3268177ab92cf5, type: 3}
+  customerPrefab: {fileID: 7015449634284353376, guid: bb09e052df403734cb67499e729dcaad, type: 3}
   spawnPoints:
   - {fileID: 395796522}
   spawnInterval: 5

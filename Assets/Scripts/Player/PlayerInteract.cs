@@ -57,6 +57,15 @@ public class PlayerInteract : MonoBehaviour
             {
                 playerUI?.UpdateText(interactable.promptMessage);
             }
+            else
+            {
+                // Handle customer speech prompt
+                CustomerAI customer = hitInfo.collider.GetComponent<CustomerAI>();
+                if (customer != null && customer.manager.IsFirstInQueue(customer) && !customer.isPaid)
+                {
+                    playerUI?.UpdateText("Accept Payment");
+                }
+            }
         }
     }
 
@@ -65,6 +74,8 @@ public class PlayerInteract : MonoBehaviour
         Ray ray = new Ray(cam.transform.position, cam.transform.forward);
         if (Physics.Raycast(ray, out RaycastHit hitInfo, distance, mask))
         {
+            if (TryInteractWithCustomer(hitInfo)) return;
+
             Interactable interactable = hitInfo.collider.GetComponent<Interactable>();
             if (interactable != null)
             {
@@ -82,6 +93,8 @@ public class PlayerInteract : MonoBehaviour
 
             if (Physics.Raycast(ray, out RaycastHit hitInfo, distance, mask))
             {
+                if (TryInteractWithCustomer(hitInfo)) return;
+
                 Interactable interactable = hitInfo.collider.GetComponent<Interactable>();
                 if (interactable != null)
                 {
@@ -111,6 +124,8 @@ public class PlayerInteract : MonoBehaviour
 
             if (Physics.Raycast(ray, out RaycastHit hitInfo, distance, mask))
             {
+                if (TryInteractWithCustomer(hitInfo)) return;
+
                 Interactable interactable = hitInfo.collider.GetComponent<Interactable>();
                 if (interactable != null)
                 {
@@ -119,7 +134,20 @@ public class PlayerInteract : MonoBehaviour
             }
         }
     }
+
+    bool TryInteractWithCustomer(RaycastHit hitInfo)
+    {
+        CustomerAI customer = hitInfo.collider.GetComponent<CustomerAI>();
+        if (customer != null && customer.manager.IsFirstInQueue(customer) && !customer.isPaid)
+        {
+            customer.AcceptPayment();
+            return true;
+        }
+
+        return false;
+    }
 }
+
 
 
 

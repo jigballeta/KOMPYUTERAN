@@ -56,6 +56,7 @@ public class CustomerManager : MonoBehaviour
         availablePCs.RemoveAt(0);
         customer.GoToPC(pc);
         customer.SitAtPC();
+        DequeueCustomer(customer);
     }
 
     public void ReleasePC(Transform pc)
@@ -65,5 +66,28 @@ public class CustomerManager : MonoBehaviour
             availablePCs.Add(pc);
         }
     }
+
+    public bool IsFirstInQueue(CustomerAI customer)
+    {
+        return waitingQueue.Count > 0 && waitingQueue.Peek() == customer;
+    }
+
+    public void DequeueCustomer(CustomerAI customer)
+    {
+        if (waitingQueue.Count > 0 && waitingQueue.Peek() == customer)
+        {
+            waitingQueue.Dequeue();
+            UpdateQueuePositions();
+        }
+    }
+
+    public Transform GetLookTargetForPC(Transform pc)
+    {
+        return pc.Find("Monitor"); // Make sure “Monitor” exists inside each MonitorLCD prefab
+    }
+
+
+
+
 }
 

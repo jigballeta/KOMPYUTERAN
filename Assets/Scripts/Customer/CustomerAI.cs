@@ -1,7 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
-
+using TMPro;
 
 public class CustomerAI : MonoBehaviour
 {
@@ -9,9 +9,16 @@ public class CustomerAI : MonoBehaviour
     public Transform doorEntryTarget;
     public int rentTime;
 
-    private Animator animator;
+    public GameObject speechBubble;
+    public TextMeshProUGUI speechText;
 
-    private CustomerManager manager;
+    private Animator animator;
+    public CustomerManager manager;
+
+    public bool isPaid = false;
+    public bool isAssignedPC = false;
+
+    public Transform pcTarget; // Store assigned PC
 
     private enum CustomerState
     {
@@ -27,21 +34,22 @@ public class CustomerAI : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
-
         agent = GetComponent<NavMeshAgent>();
-        manager = FindObjectOfType<CustomerManager>();
+        manager = FindAnyObjectByType<CustomerManager>();
 
-        rentTime = Random.Range(1, 4); // Random hours
+        rentTime = Random.Range(1, 4);
         state = CustomerState.WalkingToDoor;
 
-        agent.SetDestination(doorEntryTarget.position); // First go to the door
+        if (speechBubble != null)
+            speechBubble.SetActive(false);
+
+        agent.SetDestination(doorEntryTarget.position);
     }
 
     void Update()
     {
         if (agent != null && animator != null)
         {
-            // Use threshold to determine true movement
             bool isMoving = agent.velocity.magnitude > 0.05f && agent.remainingDistance > agent.stoppingDistance;
             animator.SetBool("IsMoving", isMoving);
         }
@@ -60,13 +68,29 @@ public class CustomerAI : MonoBehaviour
                     break;
 
                 case CustomerState.GoingToPC:
-                    state = CustomerState.UsingPC;
+                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+                    {
+                        SitAtPC(); // Now only sit when fully arrived
+                        state = CustomerState.UsingPC;
+                    }
                     break;
+
             }
         }
+
+
+        if (state == CustomerState.WaitingInQueue && manager.IsFirstInQueue(this) && !isPaid)
+        {
+            ShowRentSpeech();
+        }
+
+        if (isPaid && !isAssignedPC && state == CustomerState.WaitingInQueue)
+        {
+            isAssignedPC = true;
+            HideSpeechBubble();
+            manager.AssignPCToCustomer(this);
+        }
     }
-
-
 
     public void GoToCashier()
     {
@@ -78,19 +102,44 @@ public class CustomerAI : MonoBehaviour
         }
     }
 
-    public void GoToPC(Transform pcTarget)
+    public void GoToPC(Transform pcTransform)
     {
-        if (pcTarget != null)
+        if (pcTransform != null)
         {
+            pcTarget = pcTransform;
             agent.SetDestination(pcTarget.position);
             state = CustomerState.GoingToPC;
         }
     }
 
+
     public void SitAtPC()
     {
-        // TODO: Play sit animation, start usage timer, etc.
-        Debug.Log("Customer is sitting at PC.");
+        // Face monitor first
+        Transform lookTarget = manager.GetLookTargetForPC(pcTarget);
+        if (lookTarget != null)
+        {
+            Vector3 lookDirection = lookTarget.position - transform.position;
+            lookDirection.y = 0;
+            if (lookDirection != Vector3.zero)
+                transform.rotation = Quaternion.LookRotation(lookDirection);
+        }
+
+        // Then sit and type
+        animator.SetBool("Sit", true);
+        animator.SetBool("IsTyping", true);
+
+        Debug.Log("Customer is sitting and typing.");
+    }
+
+
+    public void AcceptPayment()
+    {
+        if (isPaid) return;
+
+        isPaid = true;
+        Debug.Log($"Customer paid for {rentTime} hour(s).");
+        UIManager.Instance.AddCash(rentTime * 10); // Update cash UI
     }
 
     public void WaitAndProceed()
@@ -101,11 +150,26 @@ public class CustomerAI : MonoBehaviour
     IEnumerator WaitForDoorThenMove()
     {
         agent.isStopped = true;
-        yield return new WaitForSeconds(1f); // Wait for door to open
+        yield return new WaitForSeconds(1f);
         agent.isStopped = false;
-        agent.SetDestination(doorEntryTarget.position); // Resume movement
+        agent.SetDestination(doorEntryTarget.position);
     }
 
+    private void ShowRentSpeech()
+    {
+        if (speechBubble != null && speechText != null && !speechBubble.activeSelf)
+        {
+            speechText.text = $"I want {rentTime} hour{(rentTime > 1 ? "s" : "")}!";
+            speechBubble.SetActive(true);
+        }
+    }
 
+    private void HideSpeechBubble()
+    {
+        if (speechBubble != null)
+            speechBubble.SetActive(false);
+    }
 }
+
+
 
