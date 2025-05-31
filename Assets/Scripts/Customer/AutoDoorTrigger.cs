@@ -2,15 +2,13 @@
 
 public class AutoDoorTrigger : MonoBehaviour
 {
-    [SerializeField] private Door door;
+    public Door door;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Customer"))
+        if (other.CompareTag("Customer") && door != null)
         {
-            if (door != null)
-                door.BaseInteract(); // calls the door’s interact behavior
+            door.Open();
         }
     }
 }
-

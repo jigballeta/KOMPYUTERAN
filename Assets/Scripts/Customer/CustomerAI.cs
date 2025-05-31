@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
+
 
 public class CustomerAI : MonoBehaviour
 {
@@ -37,6 +39,12 @@ public class CustomerAI : MonoBehaviour
 
     void Update()
     {
+        if (agent != null && animator != null)
+        {
+            // Use threshold to determine true movement
+            bool isMoving = agent.velocity.magnitude > 0.05f && agent.remainingDistance > agent.stoppingDistance;
+            animator.SetBool("IsMoving", isMoving);
+        }
 
         if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
@@ -47,7 +55,7 @@ public class CustomerAI : MonoBehaviour
                     break;
 
                 case CustomerState.WalkingToCashier:
-                    manager.EnqueueCustomer(this); // Moves to queue
+                    manager.EnqueueCustomer(this);
                     state = CustomerState.WaitingInQueue;
                     break;
 
@@ -55,14 +63,10 @@ public class CustomerAI : MonoBehaviour
                     state = CustomerState.UsingPC;
                     break;
             }
-
-            if (agent != null && animator != null)
-            {
-                animator.SetFloat("Speed", agent.velocity.magnitude);
-            }
-
         }
     }
+
+
 
     public void GoToCashier()
     {
@@ -88,6 +92,20 @@ public class CustomerAI : MonoBehaviour
         // TODO: Play sit animation, start usage timer, etc.
         Debug.Log("Customer is sitting at PC.");
     }
+
+    public void WaitAndProceed()
+    {
+        StartCoroutine(WaitForDoorThenMove());
+    }
+
+    IEnumerator WaitForDoorThenMove()
+    {
+        agent.isStopped = true;
+        yield return new WaitForSeconds(1f); // Wait for door to open
+        agent.isStopped = false;
+        agent.SetDestination(doorEntryTarget.position); // Resume movement
+    }
+
 
 }
 
