@@ -55,7 +55,6 @@ public class CustomerManager : MonoBehaviour
         Transform pc = availablePCs[0];
         availablePCs.RemoveAt(0);
         customer.GoToPC(pc);
-        customer.SitAtPC();
         DequeueCustomer(customer);
     }
 
@@ -83,7 +82,7 @@ public class CustomerManager : MonoBehaviour
 
     public Transform GetLookTargetForPC(Transform pc)
     {
-        return pc.Find("Monitor"); // Make sure “Monitor” exists inside each MonitorLCD prefab
+        return pc.Find("Monitor") ?? pc.GetComponentInChildren<Transform>().Find("Monitor");
     }
 
 
