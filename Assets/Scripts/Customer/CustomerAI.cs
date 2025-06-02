@@ -68,12 +68,10 @@ public class CustomerAI : MonoBehaviour
                     break;
 
                 case CustomerState.GoingToPC:
-                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-                    {
-                        SitAtPC(); // Now only sit when fully arrived
-                        state = CustomerState.UsingPC;
-                    }
+                    SitAtPC(); // Called only once AI reaches the PC
+                    state = CustomerState.UsingPC;
                     break;
+
 
             }
         }
@@ -102,20 +100,53 @@ public class CustomerAI : MonoBehaviour
         }
     }
 
-    public void GoToPC(Transform pcTransform)
+    public void GoToPC(Transform target)
     {
-        if (pcTransform != null)
+        if (target != null)
         {
-            pcTarget = pcTransform;
+            pcTarget = target; // Store for later
             agent.SetDestination(pcTarget.position);
             state = CustomerState.GoingToPC;
         }
     }
 
 
+
     public void SitAtPC()
     {
-        // Face monitor first
+        if (animator == null || pcTarget == null) return;
+
+        // Stop moving first
+        agent.isStopped = true;
+        agent.ResetPath();
+
+        // Rotate toward monitor
+        Transform lookTarget = manager.GetLookTargetForPC(pcTarget);
+        if (lookTarget != null)
+        {
+            Vector3 direction = lookTarget.position - transform.position;
+            direction.y = 0;
+            if (direction != Vector3.zero)
+                transform.rotation = Quaternion.LookRotation(direction);
+        }
+
+        // Play sit + typing animation
+        animator.SetBool("IsMoving", false);  // Optional
+        animator.SetBool("Sit", true);        // Triggers SitToTyping
+        animator.SetBool("IsTyping", true);   // Transitions to Typing
+    }
+
+
+    private IEnumerator HandleSitDelay()
+    {
+        // Wait until NavMeshAgent is done
+        while (agent.pathPending || agent.remainingDistance > agent.stoppingDistance + 0.05f)
+            yield return null;
+
+        // Small delay for safety
+        yield return new WaitForSeconds(0.1f);
+
+        // Face the monitor
         Transform lookTarget = manager.GetLookTargetForPC(pcTarget);
         if (lookTarget != null)
         {
@@ -125,12 +156,14 @@ public class CustomerAI : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(lookDirection);
         }
 
-        // Then sit and type
+        // Now play the sit + typing animations
         animator.SetBool("Sit", true);
         animator.SetBool("IsTyping", true);
 
-        Debug.Log("Customer is sitting and typing.");
+        Debug.Log("Customer is now sitting and typing.");
     }
+
+
 
 
     public void AcceptPayment()
