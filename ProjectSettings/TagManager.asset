@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - Sun
+  - PC
+  - Terrain
+  - Customer
   layers:
   - Default
   - TransparentFX
@@ -13,8 +16,8 @@ TagManager:
   - Water
   - UI
   - Interactable
-  - 
-  - 
+  - Walka
+  - NonWalkable
   - 
   - 
   - 

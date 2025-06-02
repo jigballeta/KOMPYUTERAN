@@ -4,7 +4,8 @@ public abstract class Interactable : MonoBehaviour
 {
     public string promptMessage;
 
-    public void BaseInteract()
+    public virtual void BaseInteract()
+
     {
         Interact();
     }
