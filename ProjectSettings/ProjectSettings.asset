@@ -145,6 +145,9 @@ PlayerSettings:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 11400000, guid: ae4065d3b8dc9b2409fc01e2d91f17c3, type: 2}
+  - {fileID: 11400000, guid: 4f033ba36c96c0646aa81bec0a4b190b, type: 2}
+  - {fileID: 7516154607357156235, guid: b6182bf374a19e94db638859fed819d5, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -263,13 +266,13 @@ PlayerSettings:
   useCustomMainGradleTemplate: 0
   useCustomLauncherGradleManifest: 0
   useCustomBaseGradleTemplate: 0
-  useCustomGradlePropertiesTemplate: 0
+  useCustomGradlePropertiesTemplate: 1
   useCustomGradleSettingsTemplate: 0
   useCustomProguardFile: 0
   AndroidTargetArchitectures: 2
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: 
+  AndroidKeystoreName: C:/Users/Jed/.android/debug.keystore
   AndroidKeyaliasName: 
   AndroidEnableArmv9SecurityFeatures: 0
   AndroidEnableArm64MTE: 0
