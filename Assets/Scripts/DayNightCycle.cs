@@ -18,12 +18,24 @@ public class DayNightCycle : MonoBehaviour
     private float timePassed = 0f;
     private bool isDayRunning = false;
 
+    public bool hasLoanFromUncleBobby = false;
+    public GameObject lockedDoorUI; // assign a "Locked - Talk to Uncle Bobby" UI prompt
+    public GameObject[] doors; // doors to lock/unlock
+
+
     [SerializeField] private MonitorController[] monitors;
 
     public Action OnDayEnd;
 
     private float startHour = 8f; // 8:00 AM
     private float endHour = 20f;  // 8:00 PM
+
+    public static bool HasLoan = false;
+    public static bool IsCafeOpen = false;
+
+    public bool isCafeUnlocked = false;
+
+
 
     public void StartDay()
     {
@@ -84,6 +96,29 @@ public class DayNightCycle : MonoBehaviour
         float remainingTime = (1f - percent) * dayDurationMinutes;
         countdownDisplay.text = $"{remainingTime:F1} mins left";
     }
+
+
+   
+
+    public void OpenCafe()
+    {
+        IsCafeOpen = true;
+        Debug.Log("Cafe is now officially open!");
+    }
+
+    public bool IsCafeUnlocked()
+    {
+        return isCafeUnlocked;
+    }
+
+    public void UnlockCafe()
+    {
+        isCafeUnlocked = true;
+        Debug.Log("Cafe is now unlocked!");
+    }
+
+
+
 }
 
 

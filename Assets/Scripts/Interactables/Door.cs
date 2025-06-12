@@ -1,88 +1,73 @@
 using UnityEngine;
-using UnityEngine.AI;
 
-public class Door : Interactable
+public class Door : MonoBehaviour
 {
-    [SerializeField] private Transform doorHinge;
-    [SerializeField] private Vector3 closedRotation = Vector3.zero;
-    [SerializeField] private Vector3 openRotation = new Vector3(0f, 90f, 0f);
+    public Animator animator;
+    public GameObject lockedText;
 
-    [Header("Audio")]
-    [SerializeField] private AudioClip openSound;
-    [SerializeField] private AudioClip closeSound;
-    [SerializeField] private AudioSource audioSource;
+    private bool isPlayerNearby = false;
 
-    [SerializeField] private NavMeshObstacle navObstacle;
-
-    private bool isOpen = false;
-    private Coroutine autoCloseCoroutine;
-
-    private void Start()
+    void Update()
     {
-        SetDoorState(false);
-        UpdatePromptMessage();
-
-        if (navObstacle != null)
-            navObstacle.enabled = true;
+        if (isPlayerNearby && Input.GetKeyDown(KeyCode.E))
+        {
+            Interact();
+        }
     }
 
-    protected override void Interact()
+    private void Interact()
     {
-        if (!isOpen)
-            Open();
+        Debug.Log("Player interacted with door.");
+
+        DayNightCycle dayNight = FindFirstObjectByType<DayNightCycle>();
+        if (dayNight != null)
+        {
+            Debug.Log("DayNightCycle found. isCafeUnlocked = " + dayNight.isCafeUnlocked);
+
+            if (!dayNight.isCafeUnlocked)
+            {
+                Debug.Log("Cafe is locked. Prompt player to talk to Uncle Bobby.");
+                if (lockedText != null)
+                    lockedText.SetActive(true);
+                return;
+            }
+        }
         else
-            Close();
+        {
+            Debug.LogWarning("DayNightCycle not found in scene.");
+            return;
+        }
+
+        // If unlocked, open the door
+        animator.SetTrigger("Open");
+        Debug.Log("Door opened.");
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isPlayerNearby = true;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isPlayerNearby = false;
+
+            // Hide locked message when player walks away
+            if (lockedText != null)
+                lockedText.SetActive(false);
+        }
     }
 
     public void Open()
     {
-        if (!isOpen)
-        {
-            isOpen = true;
-            SetDoorState(true);
-            PlaySound(openSound);
-            if (navObstacle != null) navObstacle.enabled = false;
-            UpdatePromptMessage();
-        }
-
-        if (autoCloseCoroutine != null)
-            StopCoroutine(autoCloseCoroutine);
-
-        autoCloseCoroutine = StartCoroutine(CloseAfterDelay(3f));
+        // Your logic here, for example:
+        Debug.Log("Door opened.");
+        // Animate or disable collider, etc.
     }
 
-    public void Close()
-    {
-        if (isOpen)
-        {
-            isOpen = false;
-            SetDoorState(false);
-            PlaySound(closeSound);
-            if (navObstacle != null) navObstacle.enabled = true;
-            UpdatePromptMessage();
-        }
-    }
-
-    private System.Collections.IEnumerator CloseAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        Close();
-    }
-
-    private void SetDoorState(bool open)
-    {
-        if (doorHinge != null)
-            doorHinge.localEulerAngles = open ? openRotation : closedRotation;
-    }
-
-    private void PlaySound(AudioClip clip)
-    {
-        if (audioSource != null && clip != null)
-            audioSource.PlayOneShot(clip);
-    }
-
-    private void UpdatePromptMessage()
-    {
-        promptMessage = isOpen ? "Close Door" : "Open Door";
-    }
 }

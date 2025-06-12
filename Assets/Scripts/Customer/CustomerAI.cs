@@ -18,7 +18,7 @@ public class CustomerAI : MonoBehaviour
     public bool isPaid = false;
     public bool isAssignedPC = false;
 
-    public Transform pcTarget; // Store assigned PC
+    public Transform pcTarget;
 
     private enum CustomerState
     {
@@ -68,14 +68,11 @@ public class CustomerAI : MonoBehaviour
                     break;
 
                 case CustomerState.GoingToPC:
-                    SitAtPC(); // Called only once AI reaches the PC
+                    SitAtPC();
                     state = CustomerState.UsingPC;
                     break;
-
-
             }
         }
-
 
         if (state == CustomerState.WaitingInQueue && manager.IsFirstInQueue(this) && !isPaid)
         {
@@ -104,23 +101,19 @@ public class CustomerAI : MonoBehaviour
     {
         if (target != null)
         {
-            pcTarget = target; // Store for later
+            pcTarget = target;
             agent.SetDestination(pcTarget.position);
             state = CustomerState.GoingToPC;
         }
     }
 
-
-
     public void SitAtPC()
     {
         if (animator == null || pcTarget == null) return;
 
-        // Stop moving first
         agent.isStopped = true;
         agent.ResetPath();
 
-        // Rotate toward monitor
         Transform lookTarget = manager.GetLookTargetForPC(pcTarget);
         if (lookTarget != null)
         {
@@ -130,23 +123,18 @@ public class CustomerAI : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(direction);
         }
 
-        // Play sit + typing animation
-        animator.SetBool("IsMoving", false);  // Optional
-        animator.SetBool("Sit", true);        // Triggers SitToTyping
-        animator.SetBool("IsTyping", true);   // Transitions to Typing
+        animator.SetBool("IsMoving", false);
+        animator.SetBool("Sit", true);
+        animator.SetBool("IsTyping", true);
     }
-
 
     private IEnumerator HandleSitDelay()
     {
-        // Wait until NavMeshAgent is done
         while (agent.pathPending || agent.remainingDistance > agent.stoppingDistance + 0.05f)
             yield return null;
 
-        // Small delay for safety
         yield return new WaitForSeconds(0.1f);
 
-        // Face the monitor
         Transform lookTarget = manager.GetLookTargetForPC(pcTarget);
         if (lookTarget != null)
         {
@@ -156,15 +144,11 @@ public class CustomerAI : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(lookDirection);
         }
 
-        // Now play the sit + typing animations
         animator.SetBool("Sit", true);
         animator.SetBool("IsTyping", true);
 
         Debug.Log("Customer is now sitting and typing.");
     }
-
-
-
 
     public void AcceptPayment()
     {
@@ -172,7 +156,7 @@ public class CustomerAI : MonoBehaviour
 
         isPaid = true;
         Debug.Log($"Customer paid for {rentTime} hour(s).");
-        UIManager.Instance.AddCash(rentTime * 10); // Update cash UI
+        UIManager.Instance.AddCash(rentTime * 10);
     }
 
     public void WaitAndProceed()
@@ -203,6 +187,4 @@ public class CustomerAI : MonoBehaviour
             speechBubble.SetActive(false);
     }
 }
-
-
 

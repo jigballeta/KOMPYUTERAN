@@ -22,7 +22,7 @@ public class PlayerInteract : MonoBehaviour
     {
         cam = GetComponent<PlayerLook>().cam;
 
-        playerInput = new PlayerInput(); // Your generated input class
+        playerInput = new PlayerInput();
         onFoot = playerInput.OnFoot;
 
         onFoot.Interact.performed += ctx => TryInteractCenter();
@@ -59,7 +59,6 @@ public class PlayerInteract : MonoBehaviour
             }
             else
             {
-                // Handle customer speech prompt
                 CustomerAI customer = hitInfo.collider.GetComponent<CustomerAI>();
                 if (customer != null && customer.manager.IsFirstInQueue(customer) && !customer.isPaid)
                 {
@@ -147,6 +146,8 @@ public class PlayerInteract : MonoBehaviour
         return false;
     }
 }
+
+
 
 
 

@@ -84,9 +84,5 @@ public class CustomerManager : MonoBehaviour
     {
         return pc.Find("Monitor") ?? pc.GetComponentInChildren<Transform>().Find("Monitor");
     }
-
-
-
-
 }
 
