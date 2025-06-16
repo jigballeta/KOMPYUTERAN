@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class PlayerInteract : MonoBehaviour
 {
@@ -113,11 +115,13 @@ public class PlayerInteract : MonoBehaviour
 
             Vector2 touchStart = touch.position.ReadValue();
 
-            if (touchStart.x < Screen.width * joystickZone)
-                continue;
+            // Ignore UI
+            if (IsPointerOverUIObject(touchStart)) continue;
 
-            if (touch.delta.ReadValue().magnitude > maxTapMovement)
-                continue;
+            // Ignore joystick area
+            if (touchStart.x < Screen.width * joystickZone) continue;
+
+            if (touch.delta.ReadValue().magnitude > maxTapMovement) continue;
 
             Ray ray = cam.ScreenPointToRay(touchStart);
 
@@ -145,8 +149,20 @@ public class PlayerInteract : MonoBehaviour
 
         return false;
     }
-}
 
+    bool IsPointerOverUIObject(Vector2 screenPos)
+    {
+        PointerEventData eventData = new PointerEventData(EventSystem.current)
+        {
+            position = screenPos
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        return results.Count > 0;
+    }
+}
 
 
 

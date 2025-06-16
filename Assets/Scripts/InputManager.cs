@@ -25,8 +25,9 @@ public class InputManager : MonoBehaviour
         motor = GetComponent<PlayerMotor>();
         look = GetComponent<PlayerLook>();
 
-        // Keyboard jump
-        onFoot.Jump.performed += ctx => motor.Jump();
+#if !UNITY_ANDROID && !UNITY_IOS
+        onFoot.Jump.performed += ctx => motor.Jump(); // Desktop only
+#endif
 
         // Mobile jump button
         if (jumpButton != null)
@@ -51,23 +52,22 @@ public class InputManager : MonoBehaviour
 
     void LateUpdate()
     {
-        Vector2 lookInput = onFoot.Look.ReadValue<Vector2>();
+        Vector2 lookInput = Vector2.zero;
 
 #if UNITY_ANDROID || UNITY_IOS
         foreach (Touch touch in Input.touches)
         {
             if (touch.phase == UnityEngine.TouchPhase.Moved)
-
             {
                 if (IsPointerOverUIObject(touch.position)) continue;
-
-                // Ignore left-side (joystick area)
                 if (touch.position.x < Screen.width * 0.4f) continue;
 
                 lookInput = touch.deltaPosition * 0.1f;
                 break;
             }
         }
+#else
+        lookInput = onFoot.Look.ReadValue<Vector2>();
 #endif
 
         look.ProcessLook(lookInput);
@@ -98,5 +98,3 @@ public class InputManager : MonoBehaviour
         return results.Count > 0;
     }
 }
-
-
