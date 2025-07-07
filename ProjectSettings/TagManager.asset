@@ -9,6 +9,7 @@ TagManager:
   - Terrain
   - Customer
   - Cashier
+  - UpgradeStation
   layers:
   - Default
   - TransparentFX
