@@ -7,25 +7,23 @@ public class CustomerManager : MonoBehaviour
     public Transform[] pcStations;
 
     private Queue<CustomerAI> waitingQueue = new Queue<CustomerAI>();
-    private List<Transform> availablePCs = new List<Transform>();
-
-    void Start()
-    {
-        availablePCs.AddRange(pcStations);
-    }
+    private HashSet<Transform> assignedPCs = new HashSet<Transform>();
 
     public Transform GetNextQueueSpot()
     {
         return waitingQueue.Count < queuePositions.Length ? queuePositions[waitingQueue.Count] : null;
     }
 
-    public bool IsQueueFull()
-    {
-        return waitingQueue.Count >= queuePositions.Length;
-    }
+    public bool IsQueueFull() => waitingQueue.Count >= queuePositions.Length;
 
     public void EnqueueCustomer(CustomerAI customer)
     {
+        if (!DayNightCycle.Instance.IsDayRunning)
+        {
+            Destroy(customer.gameObject);
+            return;
+        }
+
         if (IsQueueFull())
         {
             Debug.Log("Queue is full.");
@@ -62,20 +60,27 @@ public class CustomerManager : MonoBehaviour
 
     public void AssignPCToCustomer(CustomerAI customer)
     {
-        if (availablePCs.Count == 0) return;
+        if (!DayNightCycle.Instance.IsDayRunning) return;
 
-        Transform pc = availablePCs[0];
-        availablePCs.RemoveAt(0);
+        foreach (Transform pc in pcStations)
+        {
+            if (!assignedPCs.Contains(pc))
+            {
+                assignedPCs.Add(pc);
+                customer.GoToPC(pc);
+                DequeueCustomer(customer);
+                return;
+            }
+        }
 
-        customer.GoToPC(pc);
-        DequeueCustomer(customer);
+        Debug.LogWarning("No available PC to assign.");
     }
 
-    public void ReleasePC(Transform pc)
+    public void FreePC(Transform pc)
     {
-        if (!availablePCs.Contains(pc))
+        if (pc != null && assignedPCs.Contains(pc))
         {
-            availablePCs.Add(pc);
+            assignedPCs.Remove(pc);
         }
     }
 
@@ -84,4 +89,3 @@ public class CustomerManager : MonoBehaviour
         return pc.Find("Monitor") ?? pc;
     }
 }
-

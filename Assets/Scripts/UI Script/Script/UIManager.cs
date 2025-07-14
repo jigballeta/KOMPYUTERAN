@@ -13,6 +13,9 @@ public class UIManager : MonoBehaviour
     [Header("Day Over Prompt")]
     public TextMeshProUGUI dayOverPrompt;
 
+    [Header("Day Complete Prompt")]
+    public TextMeshProUGUI dayCompletePrompt;
+
     private void Awake()
     {
         if (Instance == null)
@@ -24,8 +27,12 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         UpdateCashDisplay();
+
         if (dayOverPrompt != null)
-            dayOverPrompt.gameObject.SetActive(false); // Hide prompt on start
+            dayOverPrompt.gameObject.SetActive(false);
+
+        if (dayCompletePrompt != null)
+            dayCompletePrompt.gameObject.SetActive(false);
     }
 
     public void AddCash(int amount)
@@ -60,6 +67,22 @@ public class UIManager : MonoBehaviour
             dayOverPrompt.gameObject.SetActive(true);
         }
     }
+
+    public void ShowDayCompleteMessage(int dayNumber)
+    {
+        if (dayCompletePrompt != null)
+        {
+            dayCompletePrompt.text = $"Day {dayNumber} Complete!";
+            dayCompletePrompt.gameObject.SetActive(true);
+
+            CancelInvoke(nameof(HideDayCompletePrompt));
+            Invoke(nameof(HideDayCompletePrompt), 3f); // Hide after 3 seconds
+        }
+    }
+
+    private void HideDayCompletePrompt()
+    {
+        if (dayCompletePrompt != null)
+            dayCompletePrompt.gameObject.SetActive(false);
+    }
 }
-
-
