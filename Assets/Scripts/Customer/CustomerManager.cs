@@ -16,9 +16,7 @@ public class CustomerManager : MonoBehaviour
 
     public Transform GetNextQueueSpot()
     {
-        if (waitingQueue.Count < queuePositions.Length)
-            return queuePositions[waitingQueue.Count];
-        return null;
+        return waitingQueue.Count < queuePositions.Length ? queuePositions[waitingQueue.Count] : null;
     }
 
     public bool IsQueueFull()
@@ -30,13 +28,22 @@ public class CustomerManager : MonoBehaviour
     {
         if (IsQueueFull())
         {
-            Debug.Log("Queue is full. Customer not added.");
-            Destroy(customer.gameObject); // Or handle as needed
+            Debug.Log("Queue is full.");
+            Destroy(customer.gameObject);
             return;
         }
 
         waitingQueue.Enqueue(customer);
         UpdateQueuePositions();
+    }
+
+    public void DequeueCustomer(CustomerAI customer)
+    {
+        if (waitingQueue.Count > 0 && waitingQueue.Peek() == customer)
+        {
+            waitingQueue.Dequeue();
+            UpdateQueuePositions();
+        }
     }
 
     private void UpdateQueuePositions()
@@ -48,12 +55,18 @@ public class CustomerManager : MonoBehaviour
         }
     }
 
+    public bool IsFirstInQueue(CustomerAI customer)
+    {
+        return waitingQueue.Count > 0 && waitingQueue.Peek() == customer;
+    }
+
     public void AssignPCToCustomer(CustomerAI customer)
     {
         if (availablePCs.Count == 0) return;
 
         Transform pc = availablePCs[0];
         availablePCs.RemoveAt(0);
+
         customer.GoToPC(pc);
         DequeueCustomer(customer);
     }
@@ -66,23 +79,9 @@ public class CustomerManager : MonoBehaviour
         }
     }
 
-    public bool IsFirstInQueue(CustomerAI customer)
-    {
-        return waitingQueue.Count > 0 && waitingQueue.Peek() == customer;
-    }
-
-    public void DequeueCustomer(CustomerAI customer)
-    {
-        if (waitingQueue.Count > 0 && waitingQueue.Peek() == customer)
-        {
-            waitingQueue.Dequeue();
-            UpdateQueuePositions();
-        }
-    }
-
     public Transform GetLookTargetForPC(Transform pc)
     {
-        return pc.Find("Monitor") ?? pc.GetComponentInChildren<Transform>().Find("Monitor");
+        return pc.Find("Monitor") ?? pc;
     }
 }
 

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System;
 using TMPro;
@@ -11,39 +11,34 @@ public class DayNightCycle : MonoBehaviour
     public Gradient lightColor;
     public AnimationCurve lightIntensity;
 
-    public float dayDurationMinutes = 12f; // 12 minutes = 1 day
+    public float dayDurationMinutes = 12f; // real-time duration of the in-game day
     public TextMeshProUGUI timeDisplay;
-    public TextMeshProUGUI countdownDisplay;
 
     private float timePassed = 0f;
     private bool isDayRunning = false;
 
-    public bool hasLoanFromUncleBobby = false;
-    public GameObject lockedDoorUI; // assign a "Locked - Talk to Uncle Bobby" UI prompt
-    public GameObject[] doors; // doors to lock/unlock
-
-
     [SerializeField] private MonitorController[] monitors;
 
-    public Action OnDayEnd;
-
-    private float startHour = 8f; // 8:00 AM
-    private float endHour = 20f;  // 8:00 PM
+    private float startHour = 8f;
+    private float endHour = 22f; // 10:00 PM
 
     public static bool HasLoan = false;
     public static bool IsCafeOpen = false;
+    public static bool IsSecondFloorUnlocked = false;
 
-    public bool isCafeUnlocked = false;
+    public static DayNightCycle Instance;
 
-
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+    }
 
     public void StartDay()
     {
         timePassed = 0f;
         isDayRunning = true;
         SetIndoorLights(false);
-
-        UpdateLighting(0f); // Set to initial morning lighting
+        UpdateLighting(0f);
     }
 
     void Update()
@@ -52,28 +47,22 @@ public class DayNightCycle : MonoBehaviour
 
         timePassed += Time.deltaTime;
         float timePercent = timePassed / (dayDurationMinutes * 60f);
+        float adjustedPercent = Mathf.Clamp01(timePercent * 0.75f + 0.25f);
 
-        float adjustedPercent = Mathf.Clamp01(timePercent * 0.75f + 0.25f); // Shift day to start from 8AM
         UpdateLighting(adjustedPercent);
 
         if (directionalLight.intensity < 0.3f)
-        {
             SetIndoorLights(true);
-        }
-
-        if (timePercent >= 1f)
-        {
-            isDayRunning = false;
-            SetIndoorLights(false);
-            OnDayEnd?.Invoke();
-        }
 
         UpdateClockUI(timePercent);
+
+        if (timePercent >= 1f)
+            EndDay();
     }
 
     void UpdateLighting(float percent)
     {
-        float sunRotation = Mathf.Lerp(0f, 180f, percent); // 0 = morning, 180 = evening
+        float sunRotation = Mathf.Lerp(0f, 180f, percent);
         directionalLight.transform.rotation = Quaternion.Euler(new Vector3(sunRotation - 90f, 170f, 0f));
         directionalLight.color = lightColor.Evaluate(percent);
         directionalLight.intensity = lightIntensity.Evaluate(percent);
@@ -83,7 +72,8 @@ public class DayNightCycle : MonoBehaviour
     {
         foreach (Light light in indoorLights)
         {
-            light.enabled = isOn;
+            if (light != null)
+                light.enabled = isOn;
         }
     }
 
@@ -91,34 +81,45 @@ public class DayNightCycle : MonoBehaviour
     {
         float currentHour = Mathf.Lerp(startHour, endHour, percent);
         TimeSpan time = TimeSpan.FromHours(currentHour);
-        timeDisplay.text = time.ToString(@"hh\:mm");
-
-        float remainingTime = (1f - percent) * dayDurationMinutes;
-        countdownDisplay.text = $"{remainingTime:F1} mins left";
+        if (timeDisplay != null)
+            timeDisplay.text = time.ToString(@"hh\:mm");
     }
 
+    void EndDay()
+    {
+        isDayRunning = false;
+        SetIndoorLights(false);
 
-   
+        // All customers leave
+        var allCustomers = FindObjectsByType<CustomerAI>(FindObjectsSortMode.None);
+        foreach (var customer in allCustomers)
+        {
+            customer.StandUpAndLeave();
+        }
+
+        // Show "Day Over" UI prompt
+        UIManager.Instance?.ShowDayOverPrompt();
+
+        Debug.Log("Day ended. All customers are leaving.");
+    }
 
     public void OpenCafe()
     {
         IsCafeOpen = true;
-        Debug.Log("Cafe is now officially open!");
-    }
-
-    public bool IsCafeUnlocked()
-    {
-        return isCafeUnlocked;
     }
 
     public void UnlockCafe()
     {
-        isCafeUnlocked = true;
-        Debug.Log("Cafe is now unlocked!");
+        IsCafeOpen = true;
     }
 
+    public void UnlockSecondFloor()
+    {
+        IsSecondFloorUnlocked = true;
+    }
 
-
+    public void ReceiveLoanFromUncleBobby()
+    {
+        HasLoan = true;
+    }
 }
-
-

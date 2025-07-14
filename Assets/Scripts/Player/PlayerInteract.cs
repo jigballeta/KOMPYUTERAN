@@ -62,7 +62,10 @@ public class PlayerInteract : MonoBehaviour
             else
             {
                 CustomerAI customer = hitInfo.collider.GetComponent<CustomerAI>();
-                if (customer != null && customer.manager.IsFirstInQueue(customer) && !customer.isPaid)
+                if (customer != null &&
+                    // This line requires customer.manager to be accessible
+                    customer.manager.IsFirstInQueue(customer) &&
+                    !customer.isPaid)
                 {
                     playerUI?.UpdateText("Accept Payment");
                 }
@@ -141,7 +144,10 @@ public class PlayerInteract : MonoBehaviour
     bool TryInteractWithCustomer(RaycastHit hitInfo)
     {
         CustomerAI customer = hitInfo.collider.GetComponent<CustomerAI>();
-        if (customer != null && customer.manager.IsFirstInQueue(customer) && !customer.isPaid)
+        if (customer != null &&
+            // This line also requires customer.manager to be accessible
+            customer.manager.IsFirstInQueue(customer) &&
+            !customer.isPaid)
         {
             customer.AcceptPayment();
             return true;
@@ -163,8 +169,6 @@ public class PlayerInteract : MonoBehaviour
         return results.Count > 0;
     }
 }
-
-
 
 
 

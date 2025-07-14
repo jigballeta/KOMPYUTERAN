@@ -7,6 +7,7 @@ public class CustomerAI : MonoBehaviour
 {
     public NavMeshAgent agent;
     public Transform doorEntryTarget;
+    public Transform doorExitTarget;
     public int rentTime;
 
     public GameObject speechBubble;
@@ -17,6 +18,7 @@ public class CustomerAI : MonoBehaviour
 
     public bool isPaid = false;
     public bool isAssignedPC = false;
+    private bool hasLeft = false;
 
     public Transform pcTarget;
 
@@ -26,7 +28,8 @@ public class CustomerAI : MonoBehaviour
         WalkingToCashier,
         WaitingInQueue,
         GoingToPC,
-        UsingPC
+        UsingPC,
+        Leaving
     }
 
     private CustomerState state;
@@ -70,6 +73,11 @@ public class CustomerAI : MonoBehaviour
                 case CustomerState.GoingToPC:
                     SitAtPC();
                     state = CustomerState.UsingPC;
+                    StartCoroutine(RentTimer());
+                    break;
+
+                case CustomerState.Leaving:
+                    // handled by coroutine
                     break;
             }
         }
@@ -128,26 +136,35 @@ public class CustomerAI : MonoBehaviour
         animator.SetBool("IsTyping", true);
     }
 
-    private IEnumerator HandleSitDelay()
+    IEnumerator RentTimer()
     {
-        while (agent.pathPending || agent.remainingDistance > agent.stoppingDistance + 0.05f)
+        yield return new WaitForSeconds(rentTime * 60f); // rentTime in minutes
+        StandUpAndLeave();
+    }
+
+    public void StandUpAndLeave()
+    {
+        if (hasLeft) return;
+        hasLeft = true;
+
+        agent.isStopped = false;
+        animator.SetBool("IsTyping", false);
+        animator.SetBool("Sit", false);
+        animator.SetTrigger("Stand");
+
+        StartCoroutine(LeaveAfterStanding());
+    }
+
+    IEnumerator LeaveAfterStanding()
+    {
+        yield return new WaitForSeconds(1f);
+        agent.SetDestination(doorExitTarget.position);
+        state = CustomerState.Leaving;
+
+        while (agent.pathPending || agent.remainingDistance > agent.stoppingDistance + 0.1f)
             yield return null;
 
-        yield return new WaitForSeconds(0.1f);
-
-        Transform lookTarget = manager.GetLookTargetForPC(pcTarget);
-        if (lookTarget != null)
-        {
-            Vector3 lookDirection = lookTarget.position - transform.position;
-            lookDirection.y = 0;
-            if (lookDirection != Vector3.zero)
-                transform.rotation = Quaternion.LookRotation(lookDirection);
-        }
-
-        animator.SetBool("Sit", true);
-        animator.SetBool("IsTyping", true);
-
-        Debug.Log("Customer is now sitting and typing.");
+        Destroy(gameObject);
     }
 
     public void AcceptPayment()
@@ -155,21 +172,7 @@ public class CustomerAI : MonoBehaviour
         if (isPaid) return;
 
         isPaid = true;
-        Debug.Log($"Customer paid for {rentTime} hour(s).");
         UIManager.Instance.AddCash(rentTime * 10);
-    }
-
-    public void WaitAndProceed()
-    {
-        StartCoroutine(WaitForDoorThenMove());
-    }
-
-    IEnumerator WaitForDoorThenMove()
-    {
-        agent.isStopped = true;
-        yield return new WaitForSeconds(1f);
-        agent.isStopped = false;
-        agent.SetDestination(doorEntryTarget.position);
     }
 
     private void ShowRentSpeech()
