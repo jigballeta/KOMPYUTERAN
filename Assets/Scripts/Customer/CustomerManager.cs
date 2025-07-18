@@ -20,13 +20,14 @@ public class CustomerManager : MonoBehaviour
     {
         if (!DayNightCycle.Instance.IsDayRunning)
         {
+            Debug.Log("Customer arrived but day is not running. Destroying...");
             Destroy(customer.gameObject);
             return;
         }
 
         if (IsQueueFull())
         {
-            Debug.Log("Queue is full.");
+            Debug.Log("Queue is full. Destroying customer.");
             Destroy(customer.gameObject);
             return;
         }
@@ -60,7 +61,11 @@ public class CustomerManager : MonoBehaviour
 
     public void AssignPCToCustomer(CustomerAI customer)
     {
-        if (!DayNightCycle.Instance.IsDayRunning) return;
+        if (!DayNightCycle.Instance.IsDayRunning)
+        {
+            Debug.Log("Attempted to assign PC outside daytime.");
+            return;
+        }
 
         foreach (Transform pc in pcStations)
         {

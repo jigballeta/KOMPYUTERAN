@@ -27,6 +27,9 @@ public class DayNightCycle : MonoBehaviour
     public int currentDay = 1;
     public static DayNightCycle Instance;
 
+    public static event Action OnDayStarted;
+    public static event Action OnDayEnded;
+
     public bool IsDayRunning => isDayRunning;
     public float CurrentTimePercent => Mathf.Clamp01(timePassed / (dayDurationMinutes * 60f));
 
@@ -42,6 +45,8 @@ public class DayNightCycle : MonoBehaviour
         isDayRunning = true;
         SetIndoorLights(false);
         UpdateLighting(0f);
+
+        OnDayStarted?.Invoke(); // 🔥 Notify others
     }
 
     void Update()
@@ -96,6 +101,8 @@ public class DayNightCycle : MonoBehaviour
 
         UIManager.Instance?.ShowDayOverPrompt();
         UIManager.Instance?.ShowDayCompleteMessage(currentDay);
+
+        OnDayEnded?.Invoke(); // 🔥 Notify others
 
         Debug.Log($"Day {currentDay} ended.");
         currentDay++;

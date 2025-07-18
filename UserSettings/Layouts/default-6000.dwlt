@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1552
     height: 973
   m_ShowMode: 4
-  m_Title: Scene
+  m_Title: Game
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 332}
   m_MaxSize: {x: 10000, y: 10000}
@@ -217,8 +217,8 @@ MonoBehaviour:
     y: 0
     width: 278
     height: 649
-  m_MinSize: {x: 201, y: 226}
-  m_MaxSize: {x: 4001, y: 4026}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 17}
   m_Panes:
   - {fileID: 17}
@@ -301,8 +301,8 @@ MonoBehaviour:
     y: 0
     width: 377
     height: 917
-  m_MinSize: {x: 276, y: 76}
-  m_MaxSize: {x: 4001, y: 4026}
+  m_MinSize: {x: 275, y: 50}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 22}
   m_Panes:
   - {fileID: 22}
@@ -687,8 +687,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Scene\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 279
-    y: 24
+    x: 286
+    y: 87
     width: 895
     height: 623
   m_SerializedDataModeController:
@@ -1259,9 +1259,9 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: -11.065232, y: -15.932946, z: -133.69818}
+    m_Target: {x: -7.486082, y: 9.338566, z: -152.35522}
     speed: 2
-    m_Value: {x: -11.065232, y: -15.932946, z: -133.69818}
+    m_Value: {x: -7.486082, y: 9.338566, z: -152.35522}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1307,9 +1307,9 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.00029356542, y: -0.9947634, z: 0.103640445, w: 0.0006647016}
+    m_Target: {x: 0.0010982417, y: -0.9983714, z: -0.02666961, w: -0.053342156}
     speed: 2
-    m_Value: {x: 0.00029356545, y: 0.99476343, z: -0.103640445, w: -0.0006647017}
+    m_Value: {x: 0.0010980752, y: -0.9982201, z: -0.026665566, w: -0.05333407}
   m_Size:
     m_Target: 57.299595
     speed: 2
@@ -1368,8 +1368,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Hierarchy\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 0
-    y: 24
+    x: 8
+    y: 87
     width: 277
     height: 623
   m_SerializedDataModeController:
@@ -1386,7 +1386,7 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 
+      m_SelectedIDs: b0a80000
       m_LastClickedID: 0
       m_ExpandedIDs: 1cfbffff
       m_RenameOverlay:
@@ -1869,8 +1869,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Project\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 0
-    y: 673
+    x: 8
+    y: 736
     width: 1174
     height: 242
   m_SerializedDataModeController:
@@ -1895,7 +1895,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scripts/Interactables
+    - Assets/Scripts/Customer
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -1905,16 +1905,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 82
   m_LastFolders:
-  - Assets/Scripts/Interactables
+  - Assets/Scripts/Customer
   m_LastFoldersGridSize: 82
   m_LastProjectPath: C:\Users\stela\OneDrive\Desktop\Kompyut OJT\KOMPYUTERAN
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 138}
-    m_SelectedIDs: 94c80000
-    m_LastClickedID: 51348
-    m_ExpandedIDs: 0000000090c70000
+    scrollPos: {x: 0, y: 198}
+    m_SelectedIDs: 96c80000
+    m_LastClickedID: 51350
+    m_ExpandedIDs: 0000000090c7000046c8000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1971,7 +1971,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000b0b4000066b300003aa7000082c00000a0ae0000b8ae000080b400003c99010024ae000052b60000064f0100000000003ebe000042be00004abe000026b00000b80d02006a390200
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -2058,8 +2058,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Inspector\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1176
-    y: 24
+    x: 1183
+    y: 87
     width: 376
     height: 891
   m_SerializedDataModeController:

@@ -12,9 +12,21 @@ public class CustomerSpawner : MonoBehaviour
     private bool canSpawn = false;
     private float timer = 0f;
 
+    private void OnEnable()
+    {
+        DayNightCycle.OnDayStarted += StartSpawning;
+        DayNightCycle.OnDayEnded += StopSpawning;
+    }
+
+    private void OnDisable()
+    {
+        DayNightCycle.OnDayStarted -= StartSpawning;
+        DayNightCycle.OnDayEnded -= StopSpawning;
+    }
+
     public void StartSpawning()
     {
-        Debug.Log("CustomerSpawner: StartSpawning()");
+        Debug.Log($"CustomerSpawner: StartSpawning() on Day {DayNightCycle.Instance.currentDay}");
         canSpawn = true;
         timer = 0f;
     }
