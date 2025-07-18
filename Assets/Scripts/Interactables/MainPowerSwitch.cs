@@ -24,12 +24,15 @@ public class MainPowerSwitch : Interactable
         foreach (MonitorController monitor in monitors)
             monitor.PowerOn();
 
-        dayNightCycle?.StartDay();
+        if (dayNightCycle != null)
+        {
+            dayNightCycle.StartDay();
+        }
 
         if (customerSpawner != null)
         {
-            customerSpawner.StopSpawning();  // Stop in case it was still running
-            customerSpawner.StartSpawning(); // Always start fresh
+            customerSpawner.StopSpawning();  // Ensures clean restart
+            customerSpawner.StartSpawning();
         }
 
         if (dayStartText != null)
