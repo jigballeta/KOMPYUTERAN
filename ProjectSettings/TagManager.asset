@@ -10,6 +10,8 @@ TagManager:
   - Customer
   - Cashier
   - UpgradeStation
+  - SecondFloorPC
+  - SecondFloorWaypoint
   layers:
   - Default
   - TransparentFX

@@ -1181,12 +1181,19 @@ MonoBehaviour:
   agent: {fileID: 2540961952713566512}
   doorEntryTarget: {fileID: 0}
   doorExitTarget: {fileID: 0}
+  secondFloorWaypoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   rentTime: 0
   speechBubble: {fileID: 6882977664129166783}
   speechText: {fileID: 7355186385863491334}
-  pcTarget: {fileID: 0}
   manager: {fileID: 0}
   isPaid: 0
+  isAssignedPC: 0
+  pcTarget: {fileID: 0}
 --- !u!95 &4377393262388814635
 Animator:
   serializedVersion: 7

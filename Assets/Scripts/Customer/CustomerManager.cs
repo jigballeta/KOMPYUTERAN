@@ -9,6 +9,14 @@ public class CustomerManager : MonoBehaviour
     private Queue<CustomerAI> waitingQueue = new Queue<CustomerAI>();
     private HashSet<Transform> assignedPCs = new HashSet<Transform>();
 
+    void Start()
+    {
+        foreach (Transform pc in pcStations)
+        {
+            assignedPCs.Add(pc);
+        }
+    }
+
     public Transform GetNextQueueSpot()
     {
         return waitingQueue.Count < queuePositions.Length ? queuePositions[waitingQueue.Count] : null;
@@ -67,30 +75,53 @@ public class CustomerManager : MonoBehaviour
             return;
         }
 
-        foreach (Transform pc in pcStations)
+        List<Transform> availablePCs = new List<Transform>();
+        foreach (Transform pc in assignedPCs)
         {
-            if (!assignedPCs.Contains(pc))
+            if (!IsPCInUse(pc))
             {
-                assignedPCs.Add(pc);
-                customer.GoToPC(pc);
-                DequeueCustomer(customer);
-                return;
+                availablePCs.Add(pc);
             }
         }
 
-        Debug.LogWarning("No available PC to assign.");
+        if (availablePCs.Count > 0)
+        {
+            Transform selectedPC = availablePCs[Random.Range(0, availablePCs.Count)];
+            customer.GoToPC(selectedPC);
+            DequeueCustomer(customer);
+        }
+        else
+        {
+            Debug.LogWarning("No available PC to assign.");
+        }
     }
 
     public void FreePC(Transform pc)
     {
-        if (pc != null && assignedPCs.Contains(pc))
-        {
-            assignedPCs.Remove(pc);
-        }
+        // Optional: You could track which are "in use" separately if needed.
     }
 
     public Transform GetLookTargetForPC(Transform pc)
     {
         return pc.Find("Monitor") ?? pc;
+    }
+
+    private bool IsPCInUse(Transform pc)
+    {
+        foreach (CustomerAI customer in FindObjectsByType<CustomerAI>(FindObjectsSortMode.None))
+        {
+            if (customer != null && customer.pcTarget == pc)
+                return true;
+        }
+        return false;
+    }
+
+    public void RegisterNewPC(Transform pc)
+    {
+        if (!assignedPCs.Contains(pc))
+        {
+            assignedPCs.Add(pc);
+            Debug.Log("Registered new PC station: " + pc.name);
+        }
     }
 }

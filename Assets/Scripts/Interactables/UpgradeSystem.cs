@@ -4,7 +4,7 @@ using TMPro;
 public class UpgradeSystem : MonoBehaviour
 {
     public GameObject pcPrefab;                     // Assign your PC prefab
-    public Transform spawnPoint;                    // Where to spawn the PC
+    public Transform[] spawnPoints;                 // Where to spawn the new PCs
     public TextMeshProUGUI upgradePrompt;           // UI text prompt reference
 
     private Camera mainCam;
@@ -44,7 +44,6 @@ public class UpgradeSystem : MonoBehaviour
 #if UNITY_EDITOR
         Ray ray = mainCam.ScreenPointToRay(Input.mousePosition);
 #else
-        // Use first finger on mobile to check raycast for UI prompt
         if (Input.touchCount == 0)
         {
             upgradePrompt.gameObject.SetActive(false);
@@ -72,20 +71,29 @@ public class UpgradeSystem : MonoBehaviour
         {
             if (hit.collider.CompareTag("UpgradeStation"))
             {
-                SpawnPC();
+                SpawnSecondFloorPCs();
             }
         }
     }
 
-    private void SpawnPC()
+    private void SpawnSecondFloorPCs()
     {
-        if (pcPrefab != null && spawnPoint != null)
+        if (pcPrefab == null || spawnPoints.Length == 0)
         {
-            Instantiate(pcPrefab, spawnPoint.position, spawnPoint.rotation);
+            Debug.LogWarning("PC Prefab or spawn points not assigned!");
+            return;
         }
-        else
+
+        CustomerManager manager = FindAnyObjectByType<CustomerManager>();
+
+        foreach (Transform point in spawnPoints)
         {
-            Debug.LogWarning("PC Prefab or Spawn Point is not assigned!");
+            GameObject newPC = Instantiate(pcPrefab, point.position, point.rotation);
+
+            if (manager != null)
+            {
+                manager.RegisterNewPC(newPC.transform);
+            }
         }
     }
 }

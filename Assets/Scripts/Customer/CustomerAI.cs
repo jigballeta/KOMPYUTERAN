@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 using TMPro;
+using System.Collections;
 
 public class CustomerAI : MonoBehaviour
 {
@@ -29,6 +30,8 @@ public class CustomerAI : MonoBehaviour
 
     private CustomerState state;
 
+    private Transform[] secondFloorWaypoints;
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -40,6 +43,13 @@ public class CustomerAI : MonoBehaviour
 
         if (speechBubble != null) speechBubble.SetActive(false);
         agent.SetDestination(doorEntryTarget.position);
+
+        // Automatically assign stair waypoints if not set
+        GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag("SecondFloorWaypoint");
+        System.Array.Sort(waypointObjects, (a, b) => a.name.CompareTo(b.name));
+        secondFloorWaypoints = new Transform[waypointObjects.Length];
+        for (int i = 0; i < waypointObjects.Length; i++)
+            secondFloorWaypoints[i] = waypointObjects[i].transform;
     }
 
     void Update()
@@ -51,18 +61,24 @@ public class CustomerAI : MonoBehaviour
             switch (state)
             {
                 case CustomerState.WalkingToDoor:
-                    GoToCashier(); break;
+                    GoToCashier();
+                    break;
                 case CustomerState.WalkingToCashier:
                     manager.EnqueueCustomer(this);
-                    state = CustomerState.WaitingInQueue; break;
+                    state = CustomerState.WaitingInQueue;
+                    break;
                 case CustomerState.GoingToPC:
-                    SitAtPC(); state = CustomerState.UsingPC;
-                    SetLeaveTime(); break;
+                    SitAtPC();
+                    state = CustomerState.UsingPC;
+                    SetLeaveTime();
+                    break;
             }
         }
 
         if (state == CustomerState.WaitingInQueue && manager.IsFirstInQueue(this) && !isPaid)
+        {
             ShowRentSpeech();
+        }
 
         if (isPaid && !isAssignedPC && state == CustomerState.WaitingInQueue)
         {
@@ -73,9 +89,10 @@ public class CustomerAI : MonoBehaviour
 
         if (state == CustomerState.UsingPC && !hasLeft)
         {
-            if (!DayNightCycle.Instance.IsDayRunning ||
-                DayNightCycle.Instance.CurrentTimePercent >= endPercent)
+            if (!DayNightCycle.Instance.IsDayRunning || DayNightCycle.Instance.CurrentTimePercent >= endPercent)
+            {
                 StandUpAndLeave();
+            }
         }
     }
 
@@ -109,8 +126,33 @@ public class CustomerAI : MonoBehaviour
     public void GoToPC(Transform target)
     {
         pcTarget = target;
-        agent.SetDestination(target.position);
+
+        if (IsSecondFloorPC(target))
+        {
+            StartCoroutine(GoThroughWaypointsToPC());
+        }
+        else
+        {
+            agent.SetDestination(target.position);
+        }
+
         state = CustomerState.GoingToPC;
+    }
+
+    private bool IsSecondFloorPC(Transform pc)
+    {
+        return pc.position.y > 3f; // adjust this Y threshold based on your second floor height
+    }
+
+    IEnumerator GoThroughWaypointsToPC()
+    {
+        foreach (Transform waypoint in secondFloorWaypoints)
+        {
+            agent.SetDestination(waypoint.position);
+            yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f);
+        }
+
+        agent.SetDestination(pcTarget.position);
     }
 
     public void SitAtPC()
@@ -148,7 +190,7 @@ public class CustomerAI : MonoBehaviour
         StartCoroutine(LeaveAfterStanding());
     }
 
-    System.Collections.IEnumerator LeaveAfterStanding()
+    IEnumerator LeaveAfterStanding()
     {
         yield return new WaitForSeconds(1f);
         agent.SetDestination(doorExitTarget.position);
